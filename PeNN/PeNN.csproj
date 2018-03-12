@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Layers\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
+    <PackageReference Include="System.Drawing.Common" Version="4.5.0-preview1-25718-03" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Emgu.CV.UI">
+      <HintPath>..\EmguCV\Emgu.CV.UI.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Emgu.CV.UI.GL">
+      <HintPath>..\EmguCV\Emgu.CV.UI.GL.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Emgu.CV.World">
+      <HintPath>..\EmguCV\Emgu.CV.World.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>
