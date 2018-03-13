@@ -1,5 +1,6 @@
 ﻿using PeNN.Activations;
 using PeNN.Data;
+using PeNN.Networks;
 using PeNN.Structures;
 using System;
 using System.Collections.Generic;
@@ -16,35 +17,38 @@ namespace PeNN.Layers
         public int kernelSize;
 
         public List<Kernel> kernels;
+        private bool preserveSizeAfterConv;
 
         public LayerConvolution(
             int order, 
             int numberOfKernels, 
             int kernelSize, 
-            Size layerSize,
+            bool preserveSizeAfterConvolution,
+            DataShape layerSize,
             ActivationType activationType = ActivationType.RelU,
             float activationThreshold = 0.5f) : base(LayerType.Convolution2D, order, layerSize, activationType, activationThreshold)
         {
+            this.preserveSizeAfterConv = preserveSizeAfterConvolution;
             this.numberOfKernels = numberOfKernels;
             this.kernelSize = kernelSize;
 
             this.kernels = new List<Kernel>();
-
             this.Generatekernels();
+            
         }
 
         public override List<Info> Process(Info input)
         {
             var processedInfo = new List<Info>();
-
+            
             foreach(var kernel in this.kernels)
             {
-
+                processedInfo.Add(ApplyKernel(input as Info2D, kernel));
             }
 
             return processedInfo;
         }
-
+        
         private void Generatekernels()
         {
             for (int i = 0; i < this.numberOfKernels; i++)
@@ -119,6 +123,13 @@ namespace PeNN.Layers
             }
 
             return modifiedInfo;
+        }
+
+        public override DataShape GetOutputShape()
+        {
+            var shape = new DataShape();
+
+            return shape;
         }
     }
 }

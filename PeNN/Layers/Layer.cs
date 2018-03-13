@@ -15,17 +15,27 @@ namespace PeNN.Layers
     {
         public LayerType layerType;
 
-        public Neuron[,] neurons;
+        public List<Neuron[,]> neurons;
         public string layerName;
         public int layerOrder;
         public Activation activationFunc;
 
-        public Size layerSize;
+        public DataShape dataShape;
 
-        public Layer(LayerType type, int order, Size size, ActivationType activationType, float activationThreshold = 0.5f)
+        public Layer()
+        {
+            
+        }
+
+        public Layer(
+            LayerType type, 
+            int order,
+            DataShape dataSize, 
+            ActivationType activationType, 
+            float activationThreshold = 0.5f)
         {
             this.layerType = type;
-            this.layerSize = size;
+            this.dataShape = dataSize;
 
             switch (activationType)
             {
@@ -44,22 +54,29 @@ namespace PeNN.Layers
 
             
             this.layerOrder = order;
-            this.neurons = new Neuron[size.Height, size.Width];
+            this.neurons = new List<Neuron[,]>();
 
             this.layerName = this.layerType + "_" + order;
-            this.AddNeurons();
+            //this.AddNeurons();
         }
 
-        private void AddNeurons()
+        public void AddNeurons()
         {
-            for(int i = 0; i < this.layerSize.Height; i++)
+            var neuronArray = new Neuron[this.dataShape.Height, this.dataShape.Width];
+
+            for (int i = 0; i < this.dataShape.Height; i++)
             {
-                for (int j = 0; j < this.layerSize.Width; j++)
+                for (int j = 0; j < this.dataShape.Width; j++)
                 {
-                    this.neurons[i, j] = new Neuron(this.activationFunc);
+                    neuronArray[i, j] = new Neuron(this.activationFunc);
                 }
             }
+
+            this.neurons.Add(neuronArray);
         }
+
         public abstract List<Info> Process(Info info);
+
+        public abstract DataShape GetOutputShape();
     }
 }

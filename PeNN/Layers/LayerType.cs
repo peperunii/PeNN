@@ -2,11 +2,11 @@
 {
     public enum LayerType
     {
+        Input,
         Convolution2D,
         Merge,
-        PoolAverage,
-        PoolMax,
-        Upscale,
+        Pooling,
+        UnPooling,
         Flat,
     }
 }
