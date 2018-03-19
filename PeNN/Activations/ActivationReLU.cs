@@ -2,14 +2,11 @@
 
 namespace PeNN.Activations
 {
-    class ActivationRelu : Activation
+    class ActivationRelu : IActivation
     {
-        public ActivationRelu()
-        {
-            this.activationType = ActivationType.Step;
-        }
+        public ActivationType Type => ActivationType.RelU;
 
-        public override float CalculateOutput(float input)
+        public float CalculateOutput(float input)
         {
             return (float)Math.Max(0, input);
         }
