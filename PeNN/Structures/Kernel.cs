@@ -64,7 +64,6 @@ namespace PeNN.Structures
 
                 if (!isSumBelowAmplitude || SumIsBelowAverage()) break;
             }
-            
         }
 
         private bool SumIsBelowAverage()

@@ -20,21 +20,25 @@ namespace PeNN.Layers
         private bool preserveSizeAfterConv;
 
         public LayerConvolution(
-            int order, 
-            int numberOfKernels, 
-            int kernelSize, 
+            int order,
+            int numberOfKernels,
+            int kernelSize,
             bool preserveSizeAfterConvolution,
             DataShape layerSize,
             ActivationType activationType = ActivationType.RelU,
-            float activationThreshold = 0.5f) : base(LayerType.Convolution2D, order, layerSize, activationType, activationThreshold)
+            float activationThreshold = 0.5f) 
+            : base(LayerType.Convolution2D, order, activationType)
         {
+            this.dataShape = layerSize;
+
             this.preserveSizeAfterConv = preserveSizeAfterConvolution;
             this.numberOfKernels = numberOfKernels;
             this.kernelSize = kernelSize;
 
+            this.AddNeurons();
+
             this.kernels = new List<Kernel>();
             this.Generatekernels();
-            
         }
 
         public override List<Info> Process(Info input)
@@ -128,6 +132,10 @@ namespace PeNN.Layers
         public override DataShape GetOutputShape()
         {
             var shape = new DataShape();
+
+            shape.NumberOfDimensions = this.dataShape.NumberOfDimensions;
+            shape.Width = preserveSizeAfterConv ? this.dataShape.Width : this.dataShape.Width  - this.kernelSize / 2;
+            shape.Height= preserveSizeAfterConv ? this.dataShape.Height : this.dataShape.Height - this.kernelSize / 2;
 
             return shape;
         }

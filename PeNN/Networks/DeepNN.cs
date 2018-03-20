@@ -3,6 +3,7 @@ using PeNN.Algorithms;
 using PeNN.Data;
 using PeNN.Layers;
 using PeNN.Notifications;
+using PeNN.Structures;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -21,7 +22,7 @@ namespace PeNN.Networks
         /*Real list of layers -ex: when user is adding Convo Layer and as an input, we have 10 images -> we actually create 10 convo layers*/
         internal List<Layer> actualLayersList;
 
-        public DeepNN(Size dataSize)
+        public DeepNN()
         {
             this.rnd = new Random();
             this.isLogFileSet = false;
@@ -44,7 +45,7 @@ namespace PeNN.Networks
 
         public void AddLayer(
             LayerType layerType,
-            int layerOrder,
+            int layerOrder = -1,
             DataShape shape = null,
             /*Convolution parameters*/
             int convolution_numberOfKernels = 64,
@@ -59,30 +60,39 @@ namespace PeNN.Networks
             ActivationType activationType = ActivationType.RelU,
             float activationThreshold = 0.5f)
         {
+
             /*Validate if Input layer exist. This layer is added manually - before adding any other layers. It's important to define the Size of the Data. Input layer should with order = 1*/
             if (layerType == LayerType.Input)
             {
                 /*Shape should be specified when calling 'AddLayer' function*/
                 this.layers.Add(new LayerInput(shape));
             }
-            else if (ValidateInputLayer() && layerOrder > 1)
+            else if (ValidateInputLayer())
             {
+                /*If layer order is not provided -get last layer and increase with 1*/
+                if(layerOrder == -1)
+                {
+                    layerOrder =  this.layers[this.layers.Count - 1].layerOrder + 1;
+                }
+
                 /*Get previous layer Datashape*/
                 var previousLayerShape = (from t in this.layers
                                           where t.layerOrder == layerOrder - 1
-                                          select t.dataShape).FirstOrDefault();
+                                          select t.GetOutputShape()).FirstOrDefault();
 
                 /*Get number of inputs*/
-                var numberOfItems_previousLayer = GetnumberOfInputs(layerOrder);
+                var inputs = this.GetInputs(layerOrder);
+                var numberOfItems_previousLayer = inputs.Count;//GetnumberOfInputs(layerOrder);
                 /*Get previous layer dataShape*/
 
                 /*Add layer -connect neurons with synapses from previous layer to the current one*/
                 for (int i = 0; i < numberOfItems_previousLayer; i++)
                 {
+                    Layer currentLayer = null;
                     switch (layerType)
                     {
                         case LayerType.Convolution2D:
-                            this.layers.Add(
+                            currentLayer = 
                                 new LayerConvolution(
                                     layerOrder,
                                     convolution_numberOfKernels,
@@ -90,15 +100,27 @@ namespace PeNN.Networks
                                     convolution_preserveSizeAfterConvolution,
                                     previousLayerShape,
                                     activationType,
-                                    activationThreshold));
+                                    activationThreshold);
                             break;
 
                         case LayerType.Pooling:
                             /*Construct new Pooling layer*/
                             break;
                     }
+
+                    this.ConnectLayerToPrevious(inputs[i], currentLayer);
+                    this.layers.Add(currentLayer);
                 }
             }
+        }
+
+        private void ConnectLayerToPrevious(Layer previousLayer, Layer currentLayer)
+        {
+            /*Generate mapping between layers - calculate their Shapes*/
+            var inputShape = previousLayer.GetOutputShape();
+            var outputShape = currentLayer.GetOutputShape();
+
+
         }
 
         private bool ValidateInputLayer()
@@ -129,7 +151,7 @@ namespace PeNN.Networks
             float learningRate,
             LearningType learningType,
             bool dataShuffleAfterEachEpoch,
-            LogLevel loglevel)
+            LogLevel loglevel = LogLevel.Information)
         {
             this.logLevel = loglevel;
 
@@ -222,6 +244,21 @@ namespace PeNN.Networks
             }
 
             return inputsCount;
+        }
+
+        private List<Layer> GetInputs(int currentLayerOrder)
+        {
+            var layersWithSmallerOrder = (from layer in this.layers
+                                          where layer.layerOrder == currentLayerOrder - 1
+                                          select layer).ToList();
+
+            //var neuronsList = new List<List<Neuron[,]>>();
+            //foreach (var input in layersWithSmallerOrder)
+            //{
+            //    neuronsList.Add(input.neurons);
+            //}
+
+            return layersWithSmallerOrder;
         }
 
         private void Log(string msg, LogLevel msgLogLevel)

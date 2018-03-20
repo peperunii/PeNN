@@ -8,14 +8,13 @@ namespace PeNN.Layers
 {
     public class LayerInput : Layer
     {
-        public LayerInput(DataShape size)
+        public LayerInput(
+            DataShape size, 
+            ActivationType activationType = ActivationType.RelU) 
+            : base(LayerType.Input, 1, activationType)
         {
-            this.layerOrder = 1;
             this.layerName = "Input";
-            this.neurons = new List<Neuron[,]>();
-            this.activationFunc = new ActivationRelu();
-
-            this.layerType = LayerType.Input;
+            
             this.dataShape = size;
             this.AddNeurons();
         }

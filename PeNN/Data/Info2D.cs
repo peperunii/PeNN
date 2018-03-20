@@ -43,6 +43,17 @@ namespace PeNN.Data
             this.Information = new Label(label);
         }
 
+        public Info2D(Bitmap image)
+        {
+            this.InitBgrImage(image);
+        }
+
+        public Info2D(Bitmap image, string label)
+        {
+            this.InitBgrImage(image);
+            this.Information = new Label(label);
+        }
+
         public Info2D(string csvFilename)
         {
             this.Data = new List<Data2D>();
@@ -87,6 +98,30 @@ namespace PeNN.Data
                     for (int j = 0; j < width; j++)
                     {
                         data2D.Add(imgData[i, j, k], j, i);
+                    }
+                }
+                this.Data.Add(data2D);
+            }
+        }
+
+        private void InitBgrImage(Bitmap image)
+        {
+            var width = image.Width;
+            var height = image.Height;
+            
+            this.Data = new List<Data2D>();
+            this.Shape = new DataShape(3, width, height);
+
+            for (int k = 0; k < 3; k++)
+            {
+                var data2D = new Data2D(255, width, height);
+
+                for (int i = 0; i < height; i++)
+                {
+                    for (int j = 0; j < width; j++)
+                    {
+                        var color = image.GetPixel(j, i);
+                        data2D.Add(k == 0 ? color.B : k == 1 ? color.G : color.R, j, i);
                     }
                 }
                 this.Data.Add(data2D);

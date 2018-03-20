@@ -22,9 +22,14 @@ namespace PeNN.Layers
 
         public DataShape dataShape;
 
-        public Layer()
+        public Layer(
+            LayerType type,
+            int order,
+            ActivationType activationType)
         {
-            
+            this.layerType = type;
+            this.layerOrder = order;
+            this.neurons = new List<Neuron[,]>();
         }
 
         public Layer(
@@ -62,6 +67,7 @@ namespace PeNN.Layers
 
         public void AddNeurons()
         {
+            var shape = GetOutputShape();
             var neuronArray = new Neuron[this.dataShape.Height, this.dataShape.Width];
 
             for (int i = 0; i < this.dataShape.Height; i++)
