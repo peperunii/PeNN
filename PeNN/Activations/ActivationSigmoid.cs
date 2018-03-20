@@ -2,17 +2,17 @@
 
 namespace PeNN.Activations
 {
-    class ActivationSigmoid : Activation
+    class ActivationSigmoid : IActivation
     {
         private float coeficient;
+        public ActivationType Type => ActivationType.Sigma;
 
         public ActivationSigmoid(float coeficient)
         {
-            this.coeficient = coeficient;
-            this.activationType = ActivationType.Sigma;
+            this.coeficient = coeficient;         
         }
 
-        public override float CalculateOutput(float input)
+        public float CalculateOutput(float input)
         {
             return (float)(1 / (1 + Math.Exp(-input * coeficient)));
         }

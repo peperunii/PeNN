@@ -18,7 +18,7 @@ namespace PeNN.Layers
         public List<Neuron[,]> neurons;
         public string layerName;
         public int layerOrder;
-        public Activation activationFunc;
+        public IActivation activationFunc;
 
         public DataShape dataShape;
 

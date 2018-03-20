@@ -15,9 +15,9 @@ namespace PeNN.Structures
 
         public float lastOutputResult;
 
-        private Activation activatonFunc;
+        private IActivation activatonFunc;
         
-        public Neuron(Activation activationFunc)
+        public Neuron(IActivation activationFunc)
         {
             this.activatonFunc = activationFunc;
             this.neuronIndex = Guid.NewGuid();
