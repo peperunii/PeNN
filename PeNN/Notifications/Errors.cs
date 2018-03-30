@@ -8,5 +8,6 @@ namespace PeNN.Notifications
     {
         TrainingDataEmpty,
         TrainingShapeNotSame,
+        MissingInputLayer,
     }
 }

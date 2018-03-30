@@ -8,7 +8,7 @@ namespace PeNN.Algorithms
 {
     public static class BackPropagation
     {
-        private static Network net;
+        private static INeuralNetwork net;
 
         static BackPropagation()
         {

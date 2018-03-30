@@ -4,11 +4,12 @@ using System.Text;
 
 namespace PeNN.Notifications
 {
+    [Flags]
     public enum LogLevel
     {
         Nothing = 0,
-        Information,
-        Important,
-        Everything
+        Information = 1,
+        Important = 2,
+        Everything = 3,
     }
 }

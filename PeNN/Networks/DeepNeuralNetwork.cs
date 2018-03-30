@@ -12,35 +12,21 @@ using System.Linq;
 
 namespace PeNN.Networks
 {
-    public class DeepNN : Network
+    public class DeepNeuralNetwork : INeuralNetwork
     {
-        private bool isLogFileSet;
-        private string logFilename;
-        private LogLevel logLevel;
+        public float LearningRate { get; set; }
+        public List<Layer> Layers { get; set; }
+
+        private ILogger logger { get; }
 
         private Random rnd;
-        /*Real list of layers -ex: when user is adding Convo Layer and as an input, we have 10 images -> we actually create 10 convo layers*/
+        /*Real list of Layers -ex: when user is adding Convo Layer and as an input, we have 10 images -> we actually create 10 convo Layers*/
         internal List<Layer> actualLayersList;
 
-        public DeepNN()
+        public DeepNeuralNetwork()
         {
             this.rnd = new Random();
-            this.isLogFileSet = false;
             this.actualLayersList = new List<Layer>();
-        }
-
-        public void SetLogFile(string logFilename, bool useTimeInfo = false)
-        {
-            this.isLogFileSet = true;
-            this.logFilename = logFilename;
-
-            if (useTimeInfo)
-            {
-                var timeStamp = DateTime.Now.ToFileTimeUtc();
-                this.logFilename = logFilename + "_" + timeStamp + ".txt";
-            }
-
-            File.Create(this.logFilename);
         }
 
         public void AddLayer(
@@ -61,22 +47,22 @@ namespace PeNN.Networks
             float activationThreshold = 0.5f)
         {
 
-            /*Validate if Input layer exist. This layer is added manually - before adding any other layers. It's important to define the Size of the Data. Input layer should with order = 1*/
+            /*Validate if Input layer exist. This layer is added manually - before adding any other Layers. It's important to define the Size of the Data. Input layer should with order = 1*/
             if (layerType == LayerType.Input)
             {
                 /*Shape should be specified when calling 'AddLayer' function*/
-                this.layers.Add(new LayerInput(shape));
+                this.Layers.Add(new LayerInput(shape));
             }
             else if (ValidateInputLayer())
             {
                 /*If layer order is not provided -get last layer and increase with 1*/
                 if(layerOrder == -1)
                 {
-                    layerOrder =  this.layers[this.layers.Count - 1].layerOrder + 1;
+                    layerOrder =  this.Layers[this.Layers.Count - 1].layerOrder + 1;
                 }
 
                 /*Get previous layer Datashape*/
-                var previousLayerShape = (from t in this.layers
+                var previousLayershape = (from t in this.Layers
                                           where t.layerOrder == layerOrder - 1
                                           select t.GetOutputShape()).FirstOrDefault();
 
@@ -98,7 +84,7 @@ namespace PeNN.Networks
                                     convolution_numberOfKernels,
                                     convolution_kernelSize,
                                     convolution_preserveSizeAfterConvolution,
-                                    previousLayerShape,
+                                    previousLayershape,
                                     activationType,
                                     activationThreshold);
                             break;
@@ -109,14 +95,14 @@ namespace PeNN.Networks
                     }
 
                     this.ConnectLayerToPrevious(inputs[i], currentLayer);
-                    this.layers.Add(currentLayer);
+                    this.Layers.Add(currentLayer);
                 }
             }
         }
 
         private void ConnectLayerToPrevious(Layer previousLayer, Layer currentLayer)
         {
-            /*Generate mapping between layers - calculate their Shapes*/
+            /*Generate mapping between Layers - calculate their Shapes*/
             var inputShape = previousLayer.GetOutputShape();
             var outputShape = currentLayer.GetOutputShape();
 
@@ -127,14 +113,14 @@ namespace PeNN.Networks
         {
             var result = true;
 
-            if(this.layers[0].layerType != LayerType.Input)
+            if(this.Layers[0].layerType != LayerType.Input)
             {
                 result = false;
             }
 
             if (!result)
             {
-                Log("Missing Input Layer! ", LogLevel.Important);
+                logger.LogError(Errors.MissingInputLayer);
             }
 
             return result;
@@ -142,26 +128,24 @@ namespace PeNN.Networks
 
         public void AddLayer(Layer layer)
         {
-            this.layers.Add(layer);
+            this.Layers.Add(layer);
         }
 
-        public override void Train(
+        public void Train(
             List<Info> data,
             int numbEpochs,
             float learningRate,
             LearningType learningType,
             bool dataShuffleAfterEachEpoch,
             LogLevel loglevel = LogLevel.Information)
-        {
-            this.logLevel = loglevel;
-
-            Log("Training start", LogLevel.Information);
+        {       
+            logger.Log("Training start", LogLevel.Information);
 
             if (ValidateData(data))
             {
                 for (int epochIndex = 0; epochIndex < numbEpochs; epochIndex++)
                 {
-                    Log(string.Format("Epoch: {0}", epochIndex), LogLevel.Information);
+                    logger.Log(string.Format("Epoch: {0}", epochIndex), LogLevel.Information);
 
                     switch(learningType)
                     {
@@ -174,7 +158,7 @@ namespace PeNN.Networks
                         data = this.ShuffleData(data);
                 }
 
-                Log("Training complete", LogLevel.Information);
+                logger.Log("Training complete", LogLevel.Information);
             }
         }
         
@@ -183,19 +167,7 @@ namespace PeNN.Networks
             return data.OrderBy(a => this.rnd.Next()).ToList();
         }
 
-        public override Info Test(Info data)
-        {
-            throw new NotImplementedException();
-        }
-
-
-        /*TODO: File format, import and export all Network properties, layers and weights*/
-        public override void Load(string filename)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Save(string filename)
+        public Info Test(Info data)
         {
             throw new NotImplementedException();
         }
@@ -208,9 +180,7 @@ namespace PeNN.Networks
             if(dataList.Count == 0)
             {
                 result = false;
-                Log(
-                    MapNotificationToMessage.mapErrorToMessage[Errors.TrainingDataEmpty], 
-                    LogLevel.Important);
+                logger.LogError(Errors.TrainingDataEmpty);
                 return result;
             }
 
@@ -220,9 +190,7 @@ namespace PeNN.Networks
                 if(!firstData.Shape.IsShapeEqual(data.Shape))
                 {
                     result = false;
-                    Log(
-                        MapNotificationToMessage.mapErrorToMessage[Errors.TrainingShapeNotSame],
-                        LogLevel.Important);
+                    logger.LogError(Errors.TrainingShapeNotSame);
                     return result;
                 }
             }
@@ -234,11 +202,11 @@ namespace PeNN.Networks
         {
             var inputsCount = 0;
 
-            var layersWithSmallerOrder = (from layer in this.layers
+            var LayersWithSmallerOrder = (from layer in this.Layers
                                           where layer.layerOrder == currentLayerOrder - 1
                                           select layer).ToList();
 
-            foreach (var input in layersWithSmallerOrder)
+            foreach (var input in LayersWithSmallerOrder)
             {
                 inputsCount += input.neurons.Count();
             }
@@ -248,45 +216,26 @@ namespace PeNN.Networks
 
         private List<Layer> GetInputs(int currentLayerOrder)
         {
-            var layersWithSmallerOrder = (from layer in this.layers
+            var LayersWithSmallerOrder = (from layer in this.Layers
                                           where layer.layerOrder == currentLayerOrder - 1
                                           select layer).ToList();
 
             //var neuronsList = new List<List<Neuron[,]>>();
-            //foreach (var input in layersWithSmallerOrder)
+            //foreach (var input in LayersWithSmallerOrder)
             //{
             //    neuronsList.Add(input.neurons);
             //}
 
-            return layersWithSmallerOrder;
-        }
-
-        private void Log(string msg, LogLevel msgLogLevel)
-        {
-            if (this.logLevel != LogLevel.Nothing)
-            {
-                if (this.logLevel == msgLogLevel || this.logLevel == LogLevel.Everything)
-                {
-                    if (!this.isLogFileSet)
-                    {
-                        Console.WriteLine(msg);
-                    }
-                    else
-                    {
-                        var timeInfo = DateTime.Now.ToString();
-                        File.AppendAllLines(this.logFilename, new List<string>() { timeInfo + " : " + msg });
-                    }
-                }
-            }
+            return LayersWithSmallerOrder;
         }
 
         public string GetNetworkInfo()
         {
             var info = string.Empty;
 
-            info += "Input: " + this.layers[0].neurons.Count + "\n";
-            info += "Number of Layers: " + this.layers.Count + "\n";
-            info += "Output: " + this.layers[this.layers.Count - 1].neurons.Count + "\n";
+            info += "Input: " + this.Layers[0].neurons.Count + "\n";
+            info += "Number of Layers: " + this.Layers.Count + "\n";
+            info += "Output: " + this.Layers[this.Layers.Count - 1].neurons.Count + "\n";
             info += ".........\n";
 
             return info;

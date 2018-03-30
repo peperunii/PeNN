@@ -12,7 +12,7 @@ namespace NNTester
         {
             var path = @"C:\Users\Petar\source\repos\PeNN\NNTester\bin\Debug\netcoreapp2.0\";
             var image = new Bitmap(path + "testImage.png");
-            var network = new DeepNN();
+            var network = new DeepNeuralNetwork();
 
             /*Define Architecture*/
             network.AddLayer(PeNN.Layers.LayerType.Input, shape: new PeNN.Data.DataShape(3, image.Width, image.Height));
