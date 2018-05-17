@@ -58,12 +58,12 @@ namespace PeNN.Networks
                 /*If layer order is not provided -get last layer and increase with 1*/
                 if(layerOrder == -1)
                 {
-                    layerOrder =  this.Layers[this.Layers.Count - 1].layerOrder + 1;
+                    layerOrder =  this.Layers[this.Layers.Count - 1].LayerOrder + 1;
                 }
 
                 /*Get previous layer Datashape*/
                 var previousLayershape = (from t in this.Layers
-                                          where t.layerOrder == layerOrder - 1
+                                          where t.LayerOrder == layerOrder - 1
                                           select t.GetOutputShape()).FirstOrDefault();
 
                 /*Get number of inputs*/
@@ -113,7 +113,7 @@ namespace PeNN.Networks
         {
             var result = true;
 
-            if(this.Layers[0].layerType != LayerType.Input)
+            if(this.Layers[0].LayerType != LayerType.Input)
             {
                 result = false;
             }
@@ -203,12 +203,12 @@ namespace PeNN.Networks
             var inputsCount = 0;
 
             var LayersWithSmallerOrder = (from layer in this.Layers
-                                          where layer.layerOrder == currentLayerOrder - 1
+                                          where layer.LayerOrder == currentLayerOrder - 1
                                           select layer).ToList();
 
             foreach (var input in LayersWithSmallerOrder)
             {
-                inputsCount += input.neurons.Count();
+                inputsCount += input.Neurons.Count();
             }
 
             return inputsCount;
@@ -217,7 +217,7 @@ namespace PeNN.Networks
         private List<Layer> GetInputs(int currentLayerOrder)
         {
             var LayersWithSmallerOrder = (from layer in this.Layers
-                                          where layer.layerOrder == currentLayerOrder - 1
+                                          where layer.LayerOrder == currentLayerOrder - 1
                                           select layer).ToList();
 
             //var neuronsList = new List<List<Neuron[,]>>();
@@ -233,9 +233,9 @@ namespace PeNN.Networks
         {
             var info = string.Empty;
 
-            info += "Input: " + this.Layers[0].neurons.Count + "\n";
+            info += "Input: " + this.Layers[0].Neurons.Count + "\n";
             info += "Number of Layers: " + this.Layers.Count + "\n";
-            info += "Output: " + this.Layers[this.Layers.Count - 1].neurons.Count + "\n";
+            info += "Output: " + this.Layers[this.Layers.Count - 1].Neurons.Count + "\n";
             info += ".........\n";
 
             return info;

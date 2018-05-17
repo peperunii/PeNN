@@ -13,56 +13,27 @@ namespace PeNN.Layers
 {
     public abstract class Layer
     {
-        public LayerType layerType;
+        public LayerType LayerType;
 
-        public List<Neuron[,]> neurons;
-        public string layerName;
-        public int layerOrder;
-        public IActivation activationFunc;
+        public List<Neuron[,]> Neurons;
+        public string LayerName;
+        public int LayerOrder;
+        public IActivation ActivationFunc;
 
         public DataShape dataShape;
-
-        public Layer(
-            LayerType type,
-            int order,
-            ActivationType activationType)
-        {
-            this.layerType = type;
-            this.layerOrder = order;
-            this.neurons = new List<Neuron[,]>();
-        }
 
         public Layer(
             LayerType type, 
             int order,
             DataShape dataSize, 
-            ActivationType activationType, 
-            float activationThreshold = 0.5f)
+            IActivation function)
         {
-            this.layerType = type;
-            this.dataShape = dataSize;
+            this.LayerType = type;
+            this.dataShape = dataSize;            
+            this.LayerOrder = order;
+            this.Neurons = new List<Neuron[,]>();
 
-            switch (activationType)
-            {
-                case ActivationType.RelU:
-                    this.activationFunc = new ActivationRelu();
-                    break;
-
-                case ActivationType.Sigma:
-                    this.activationFunc = new ActivationSigmoid(activationThreshold);
-                    break;
-
-                case ActivationType.Step:
-                    this.activationFunc = new ActivationStep(activationThreshold);
-                    break;
-            }
-
-            
-            this.layerOrder = order;
-            this.neurons = new List<Neuron[,]>();
-
-            this.layerName = this.layerType + "_" + order;
-            //this.AddNeurons();
+            this.LayerName = this.LayerType + "_" + order;
         }
 
         public void AddNeurons()
@@ -74,11 +45,11 @@ namespace PeNN.Layers
             {
                 for (int j = 0; j < this.dataShape.Width; j++)
                 {
-                    neuronArray[i, j] = new Neuron(this.activationFunc);
+                    neuronArray[i, j] = new Neuron(this.ActivationFunc);
                 }
             }
 
-            this.neurons.Add(neuronArray);
+            this.Neurons.Add(neuronArray);
         }
 
         public abstract List<Info> Process(Info info);

@@ -27,7 +27,7 @@ namespace PeNN.Layers
             DataShape layerSize,
             ActivationType activationType = ActivationType.RelU,
             float activationThreshold = 0.5f) 
-            : base(LayerType.Convolution2D, order, activationType)
+            : base(LayerType.Convolution2D, order, layerSize, new ActivationRelu())
         {
             this.dataShape = layerSize;
 

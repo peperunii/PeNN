@@ -11,9 +11,9 @@ namespace PeNN.Layers
         public LayerInput(
             DataShape size, 
             ActivationType activationType = ActivationType.RelU) 
-            : base(LayerType.Input, 1, activationType)
+            : base(LayerType.Input, 1, size, new ActivationRelu())
         {
-            this.layerName = "Input";
+            this.LayerName = "Input";
             
             this.dataShape = size;
             this.AddNeurons();
